@@ -18,6 +18,9 @@ public:
                    float target_roll, float target_pitch, float target_yaw,
                    const std::vector<float>& initial_guess);
 
+    void forwardKinematics(const std::vector<float>& joint_angles,
+                           float& x, float& y, float& z,
+                           float& roll, float& pitch, float& yaw) const;
 private:
     std::vector<Joint>& joints_;
     const std::vector<Link>& links_;
@@ -27,9 +30,7 @@ private:
     float tolerance_;
     float learning_rate_;
 
-    void forwardKinematics(const std::vector<float>& joint_angles,
-                           float& x, float& y, float& z,
-                           float& roll, float& pitch, float& yaw) const;
+    
 
     void computeJacobian(const std::vector<float>& joint_angles,
                          std::vector<std::vector<float>>& J) const;

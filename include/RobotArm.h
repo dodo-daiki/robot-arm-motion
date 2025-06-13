@@ -22,6 +22,10 @@ public:
     // 6DOF対応版 computeIK
     void computeIK(float target_x, float target_y, float target_z,
                float target_roll, float target_pitch, float target_yaw);
+    
+    void getEndEffectorPose(float& x, float& y, float& z,
+                        float& roll, float& pitch, float& yaw);
+
 
     // ジョイント角度取得
     void setJointAngle(size_t index, float angle);

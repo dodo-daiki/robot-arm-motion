@@ -4,7 +4,7 @@
 RobotArm arm;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial.println("=== RobotArm 6DOF Full Example ===");
 
     // ---- Robot Structure ----
@@ -55,8 +55,17 @@ void setup() {
 
     // ---- Compute IK ----
     Serial.println("Computing IK...");
+    unsigned long start_time = micros();
+
     arm.computeIK(target_x, target_y, target_z,
                   target_roll, target_pitch, target_yaw);
+
+    unsigned long end_time = micros();
+    unsigned long elapsed_time_us = end_time - start_time;
+
+    Serial.print("IK Computation Time: ");
+    Serial.print(elapsed_time_us / 1000.0f);
+    Serial.println(" ms");
 
     // ---- Result ----
     Serial.println("Result Joint Angles (degrees):");
@@ -68,6 +77,23 @@ void setup() {
         Serial.print(angle_deg);
         Serial.println(" deg");
     }
+
+    // ---- IK Precision Check ----
+    Serial.println("=== IK Precision Check ===");
+
+    float result_x, result_y, result_z;
+    float result_roll, result_pitch, result_yaw;
+
+    arm.getEndEffectorPose(result_x, result_y, result_z,
+                           result_roll, result_pitch, result_yaw);
+
+    Serial.print("Target X: "); Serial.print(target_x); Serial.print(" , Result X: "); Serial.print(result_x); Serial.print(" , Error: "); Serial.println(fabs(target_x - result_x));
+    Serial.print("Target Y: "); Serial.print(target_y); Serial.print(" , Result Y: "); Serial.print(result_y); Serial.print(" , Error: "); Serial.println(fabs(target_y - result_y));
+    Serial.print("Target Z: "); Serial.print(target_z); Serial.print(" , Result Z: "); Serial.print(result_z); Serial.print(" , Error: "); Serial.println(fabs(target_z - result_z));
+
+    Serial.print("Target Roll: "); Serial.print(target_roll); Serial.print(" , Result Roll: "); Serial.print(result_roll); Serial.print(" , Error: "); Serial.println(fabs(target_roll - result_roll));
+    Serial.print("Target Pitch: "); Serial.print(target_pitch); Serial.print(" , Result Pitch: "); Serial.print(result_pitch); Serial.print(" , Error: "); Serial.println(fabs(target_pitch - result_pitch));
+    Serial.print("Target Yaw: "); Serial.print(target_yaw); Serial.print(" , Result Yaw: "); Serial.print(result_yaw); Serial.print(" , Error: "); Serial.println(fabs(target_yaw - result_yaw));
 
     Serial.println("=== End of Example ===");
 }

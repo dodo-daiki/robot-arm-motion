@@ -41,10 +41,19 @@ void RobotArm::computeIK(float target_x, float target_y, float target_z,
                       initial_guess);
 }
 
+void RobotArm::getEndEffectorPose(float& x, float& y, float& z,
+                                  float& roll, float& pitch, float& yaw) {
+    std::vector<float> joint_angles(joints_.size());
+    for (size_t i = 0; i < joints_.size(); ++i) {
+        joint_angles[i] = joints_[i].getCurrentValue();
+    }
+    solver_.forwardKinematics(joint_angles, x, y, z, roll, pitch, yaw);
+}
+
+
 void RobotArm::setJointAngle(size_t index, float angle) {
     if (index >= joints_.size()) return;
-    // 制限内に収めてセットする
-    angle = solver_.clamp(angle, joints_[index].getLimitMin(), joints_[index].getLimitMax());
+    
     joints_[index].setCurrentValue(angle);
 }
 
