@@ -29,8 +29,13 @@ void RobotArm::setLearningRate(float learning_rate) {
 }
 
 void RobotArm::computeIK(float target_x, float target_y, float target_z,
-                         float target_roll, float target_pitch, float target_yaw,
-                         const std::vector<float>& initial_guess) {
+                         float target_roll, float target_pitch, float target_yaw) {
+
+    std::vector<float> initial_guess(joints_.size());
+    for (size_t i = 0; i < joints_.size(); ++i) {
+        initial_guess[i] = joints_[i].getCurrentValue();
+    }
+
     solver_.computeIK(target_x, target_y, target_z,
                       target_roll, target_pitch, target_yaw,
                       initial_guess);

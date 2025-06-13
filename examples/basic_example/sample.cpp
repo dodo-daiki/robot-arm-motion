@@ -49,21 +49,14 @@ void setup() {
     float target_x = 0.9f;
     float target_y = 0.3f;
     float target_z = 0.6f;
-    float target_roll = 0.0f; 
+    float target_roll = 0.0f;   // for simplicity
     float target_pitch = 0.0f;
     float target_yaw = 0.0f;
-
-    // ---- Initial Guess ----
-    std::vector<float> initial_guess(arm.getNumJoints());
-    for (size_t i = 0; i < arm.getNumJoints(); ++i) {
-        initial_guess[i] = arm.getJointAngle(i);  // Use current pose as initial guess
-    }
 
     // ---- Compute IK ----
     Serial.println("Computing IK...");
     arm.computeIK(target_x, target_y, target_z,
-                  target_roll, target_pitch, target_yaw,
-                  initial_guess);
+                  target_roll, target_pitch, target_yaw);
 
     // ---- Result ----
     Serial.println("Result Joint Angles (degrees):");
