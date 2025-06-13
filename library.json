@@ -1,0 +1,9 @@
+{
+    "name": "robot-arm",
+    "version": "1.0.0",
+    "author": "Daiki Dodo",
+    "description": "Forward and Inverse Kinematics Library for 5/6 axis Robot Arm",
+    "keywords": ["robot arm", "kinematics", "inverse kinematics", "forward kinematics"],
+    "frameworks": ["mbed", "arduino"],
+    "platforms": ["ststm32"]
+}
