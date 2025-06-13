@@ -4,41 +4,67 @@
 
 KinematicsSolver::KinematicsSolver(std::vector<Joint>& joints,
                                    const std::vector<Link>& links)
-    : joints_(joints), links_(links) {}
+    : joints_(joints), links_(links),
+      max_iterations_(100),
+      tolerance_(0.01f),
+      learning_rate_(0.1f) {}
+
+void KinematicsSolver::setMaxIterations(int max_iterations) {
+    max_iterations_ = max_iterations;
+}
+
+void KinematicsSolver::setTolerance(float tolerance) {
+    tolerance_ = tolerance;
+}
+
+void KinematicsSolver::setLearningRate(float learning_rate) {
+    learning_rate_ = learning_rate;
+}
 
 void KinematicsSolver::computeIK(float target_x, float target_y, float target_z,
+                                 float target_roll, float target_pitch, float target_yaw,
                                  const std::vector<float>& initial_guess) {
     std::vector<float> joint_angles = initial_guess;
-    const int max_iterations = 100;
-    const float tolerance = 0.01;
-    const float learning_rate = 0.1;
 
-    for (int iter = 0; iter < max_iterations; ++iter) {
+    for (int iter = 0; iter < max_iterations_; ++iter) {
         float current_x, current_y, current_z;
-        forwardKinematics(joint_angles, current_x, current_y, current_z);
+        float current_roll, current_pitch, current_yaw;
 
-        float error_x = target_x - current_x;
-        float error_y = target_y - current_y;
-        float error_z = target_z - current_z;
+        forwardKinematics(joint_angles, current_x, current_y, current_z,
+                          current_roll, current_pitch, current_yaw);
 
-        float error_norm = sqrt(error_x * error_x + error_y * error_y + error_z * error_z);
-        if (error_norm < tolerance) {
+        float error[6] = {
+            target_x - current_x,
+            target_y - current_y,
+            target_z - current_z,
+            target_roll - current_roll,
+            target_pitch - current_pitch,
+            target_yaw - current_yaw
+        };
+
+        float error_norm = 0.0f;
+        for (int i = 0; i < 6; ++i) {
+            error_norm += error[i] * error[i];
+        }
+        error_norm = sqrt(error_norm);
+
+        if (error_norm < tolerance_) {
             Serial.print("IK converged in ");
             Serial.print(iter);
             Serial.println(" iterations.");
             break;
         }
 
-        float J[3][3];
+        std::vector<std::vector<float>> J(6, std::vector<float>(joint_angles.size(), 0.0f));
         computeJacobian(joint_angles, J);
 
         // Jacobian Transpose update
         for (size_t i = 0; i < joint_angles.size(); ++i) {
-            float delta_theta = learning_rate * (
-                J[0][i] * error_x +
-                J[1][i] * error_y +
-                J[2][i] * error_z
-            );
+            float delta_theta = 0.0f;
+            for (int j = 0; j < 6; ++j) {
+                delta_theta += J[j][i] * error[j];
+            }
+            delta_theta *= learning_rate_;
 
             joint_angles[i] += delta_theta;
             joint_angles[i] = clamp(joint_angles[i],
@@ -54,11 +80,12 @@ void KinematicsSolver::computeIK(float target_x, float target_y, float target_z,
 }
 
 void KinematicsSolver::forwardKinematics(const std::vector<float>& joint_angles,
-                                         float& x, float& y, float& z) const {
+                                         float& x, float& y, float& z,
+                                         float& roll, float& pitch, float& yaw) const {
     Matrix4x4 T;
     T.setIdentity();
 
-    size_t n = min(joint_angles.size(), links_.size());
+    size_t n = std::min(joint_angles.size(), links_.size());
     for (size_t i = 0; i < n; ++i) {
         float theta = joint_angles[i] + joints_[i].getThetaOffset();
         float a = links_[i].getA();
@@ -88,32 +115,42 @@ void KinematicsSolver::forwardKinematics(const std::vector<float>& joint_angles,
         Ti.data[3][2] = 0.0f;
         Ti.data[3][3] = 1.0f;
 
-        T.multiply(Ti);
+        T *= Ti;
     }
 
-    // Extract end effector position
     x = T.data[0][3];
     y = T.data[1][3];
     z = T.data[2][3];
+
+    T.getRPY(roll, pitch, yaw);
 }
 
 void KinematicsSolver::computeJacobian(const std::vector<float>& joint_angles,
-                                       float J[3][3]) const {
-    const float delta = 0.0001;
+                                       std::vector<std::vector<float>>& J) const {
+    const float delta = 0.0001f;
 
     float base_x, base_y, base_z;
-    forwardKinematics(joint_angles, base_x, base_y, base_z);
+    float base_roll, base_pitch, base_yaw;
+
+    forwardKinematics(joint_angles, base_x, base_y, base_z,
+                      base_roll, base_pitch, base_yaw);
 
     for (size_t i = 0; i < joint_angles.size(); ++i) {
         std::vector<float> temp_angles = joint_angles;
         temp_angles[i] += delta;
 
         float dx, dy, dz;
-        forwardKinematics(temp_angles, dx, dy, dz);
+        float d_roll, d_pitch, d_yaw;
+
+        forwardKinematics(temp_angles, dx, dy, dz,
+                          d_roll, d_pitch, d_yaw);
 
         J[0][i] = (dx - base_x) / delta;
         J[1][i] = (dy - base_y) / delta;
         J[2][i] = (dz - base_z) / delta;
+        J[3][i] = (d_roll - base_roll) / delta;
+        J[4][i] = (d_pitch - base_pitch) / delta;
+        J[5][i] = (d_yaw - base_yaw) / delta;
     }
 }
 

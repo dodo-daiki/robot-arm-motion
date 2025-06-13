@@ -1,8 +1,7 @@
 #include "RobotArm.h"
 
 RobotArm::RobotArm()
-    : solver_(joints_, links_)  // KinematicsSolverに参照を渡す（joints_とlinks_を共有）
-{}
+    : solver_(joints_, links_) {}
 
 void RobotArm::addJoint(float limit_min, float limit_max, float theta_offset) {
     joints_.emplace_back(theta_offset, limit_min, limit_max);
@@ -16,12 +15,36 @@ size_t RobotArm::getNumJoints() const {
     return joints_.size();
 }
 
-void RobotArm::computeIK(float target_x, float target_y, float target_z,
-                         const std::vector<float>& initial_guess) {
-    solver_.computeIK(target_x, target_y, target_z, initial_guess);
+// IKパラメータ設定のパススルー
+void RobotArm::setMaxIterations(int max_iterations) {
+    solver_.setMaxIterations(max_iterations);
 }
 
+void RobotArm::setTolerance(float tolerance) {
+    solver_.setTolerance(tolerance);
+}
+
+void RobotArm::setLearningRate(float learning_rate) {
+    solver_.setLearningRate(learning_rate);
+}
+
+void RobotArm::computeIK(float target_x, float target_y, float target_z,
+                         float target_roll, float target_pitch, float target_yaw,
+                         const std::vector<float>& initial_guess) {
+    solver_.computeIK(target_x, target_y, target_z,
+                      target_roll, target_pitch, target_yaw,
+                      initial_guess);
+}
+
+void RobotArm::setJointAngle(size_t index, float angle) {
+    if (index >= joints_.size()) return;
+    // 制限内に収めてセットする
+    angle = solver_.clamp(angle, joints_[index].getLimitMin(), joints_[index].getLimitMax());
+    joints_[index].setCurrentValue(angle);
+}
+
+
 float RobotArm::getJointAngle(size_t index) const {
-    if (index >= joints_.size()) return 0.0f;  // 安全のため
+    if (index >= joints_.size()) return 0.0f;
     return joints_[index].getCurrentValue();
 }
