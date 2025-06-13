@@ -49,7 +49,7 @@ void setup() {
     float target_x = 0.9f;
     float target_y = 0.3f;
     float target_z = 0.6f;
-    float target_roll = 0.0f;   // keep orientation simple for now
+    float target_roll = 0.0f; 
     float target_pitch = 0.0f;
     float target_yaw = 0.0f;
 
