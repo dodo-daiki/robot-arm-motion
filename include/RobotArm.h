@@ -1,18 +1,33 @@
 #pragma once
-#include "Body.h"
-#include "Kinematics.h"
-#include <Eigen/Dense>
-#include <vector>
+
+#include "Pose.h"
+#include "ArmModel.h"
+#include "IKSolver.h"
+#include "FKSolver.h"
 
 class RobotArm {
 public:
-    RobotArm(const Body& body_);
+    RobotArm();
 
-    Eigen::Affine3d forwardKinematics(const std::vector<double>& jointAngles) const;
-    Eigen::MatrixXd computeJacobian(const std::vector<double>& jointAngles) const;
-    bool inverseKinematics(const Eigen::Affine3d& targetPose, std::vector<double>& jointAngles);
+    void setJointAngles(const double* angles);
+    void getJointAngles(double* outAngles) const;
+
+    Pose forwardKinematics();
+    bool inverseKinematics(const Pose& targetPose);
+
+    // IK params
+    void setIKEpsilon(double eps);
+    void setIKMaxIterations(int maxIter);
+    void setIKLearningRate(double lr);
+
+    // Access to model
+    ArmModel& getModel();
 
 private:
-    const Body& body;
-    Kinematics kinematics;
+    static constexpr int NUM_JOINTS = 6;
+    double jointAngles[NUM_JOINTS];
+
+    ArmModel model;
+    IKSolver ikSolver;
+    FKSolver fkSolver;
 };

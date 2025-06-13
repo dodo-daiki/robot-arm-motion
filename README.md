@@ -1,22 +1,20 @@
-# Robot Arm Library
+# Robot Arm Library (Redesigned)
 
-This library provides forward and inverse kinematics functions for 5 and 6 axis robot arms.
+This is a redesigned modular library for robot arm kinematics.
+
+## Structure
+
+- `RobotArm` : Main interface class
+- `ArmModel` : Stores physical parameters (link lengths)
+- `IKSolver` : Inverse kinematics
+- `FKSolver` : Forward kinematics
+- `Pose`     : Pose type
 
 ## Usage
 
-Add this repository to your PlatformIO project:
+See `examples/basic_example/main.cpp`.
 
-```
-lib_deps =
-    https://github.com/your-username/robot-arm.git
-```
+## Dependencies
 
-Then:
+- Eigen (header-only library)
 
-```cpp
-#include <RobotArm.h>
-```
-
-## License
-
-MIT License

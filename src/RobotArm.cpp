@@ -1,15 +1,38 @@
 #include "RobotArm.h"
+#include <cstring>
 
-RobotArm::RobotArm(const Body& body_) : body(body_), kinematics(body_) {}
-
-Eigen::Affine3d RobotArm::forwardKinematics(const std::vector<double>& jointAngles) const {
-    return kinematics.forwardKinematics(jointAngles);
+RobotArm::RobotArm() {
+    std::memset(jointAngles, 0, sizeof(jointAngles));
 }
 
-Eigen::MatrixXd RobotArm::computeJacobian(const std::vector<double>& jointAngles) const {
-    return kinematics.computeJacobian(jointAngles);
+void RobotArm::setJointAngles(const double* angles) {
+    std::memcpy(jointAngles, angles, sizeof(jointAngles));
 }
 
-bool RobotArm::inverseKinematics(const Eigen::Affine3d& targetPose, std::vector<double>& jointAngles) {
-    return kinematics.inverseKinematics(targetPose, jointAngles);
+void RobotArm::getJointAngles(double* outAngles) const {
+    std::memcpy(outAngles, jointAngles, sizeof(jointAngles));
+}
+
+Pose RobotArm::forwardKinematics() {
+    return fkSolver.solve(model, jointAngles);
+}
+
+bool RobotArm::inverseKinematics(const Pose& targetPose) {
+    return ikSolver.solve(model, jointAngles, targetPose);
+}
+
+void RobotArm::setIKEpsilon(double eps) {
+    ikSolver.setEpsilon(eps);
+}
+
+void RobotArm::setIKMaxIterations(int maxIter) {
+    ikSolver.setMaxIterations(maxIter);
+}
+
+void RobotArm::setIKLearningRate(double lr) {
+    ikSolver.setLearningRate(lr);
+}
+
+ArmModel& RobotArm::getModel() {
+    return model;
 }
