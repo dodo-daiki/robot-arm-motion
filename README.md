@@ -39,7 +39,7 @@ git clone https://github.com/dodo-daiki/robot-arm-motion.git lib/RobotArm
 If published to PlatformIO registry:
 
 ```ini
-lib_deps = yourusername/RobotArm@^1.0.0
+lib_deps = https://github.com/dodo-daiki/robot-arm-motion
 ```
 
 Or use a local path:
@@ -63,12 +63,10 @@ lib_deps =
 
 ## Limitations / 制限事項
 
-- Designed for simple **2-3 DOF robot arms** / 2～3自由度程度のロボットアーム向け
+- Designed for simple **2-3 DOF robot arms** / 5～6自由度程度のロボットアーム向け
 - Inverse kinematics uses **Jacobian Transpose** (not optimal for all configurations)  
   逆運動学は **ヤコビアン転置法** を使用（全ての構成に対して最適とは限らない）
 - No collision checking / 衝突判定なし
-- For complex robots, consider offloading IK to PC and sending results to MCU.  
-  より複雑なロボットの場合は **PC側でIK計算 → マイコンへ結果送信** を推奨
 
 ---
 
