@@ -1,12 +1,36 @@
 {
-    "name": "robot-arm",
-    "version": "2.0.0",
-    "author": "Your Name",
-    "description": "Modular Robot Arm Kinematics Library (FK/IK) with ArmModel separation",
-    "keywords": ["robot arm", "kinematics", "inverse kinematics", "forward kinematics"],
-    "frameworks": ["mbed", "arduino"],
-    "platforms": ["ststm32"],
-    "dependencies": [
-        "eigen"
+  "name": "RobotArm",
+  "version": "1.0.0",
+  "description": "Lightweight RobotArm kinematics library for Arduino. Supports 4x4 matrix operations, forward/inverse kinematics.",
+  "keywords": [
+    "robotarm",
+    "kinematics",
+    "robotics",
+    "matrix",
+    "inverse kinematics",
+    "forward kinematics"
+  ],
+  "authors": [
+    {
+      "name": "dodo daiki",
+      "url": "https://github.com/dodo-daiki/robot-arm-motion.git",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "frameworks": [
+    "arduino"
+  ],
+  "platforms": [
+    "atmelavr",
+    "espressif32",
+    "espressif8266",
+    "ststm32"
+  ],
+  "export": {
+    "include": [
+      "src",
+      "examples"
     ]
+  }
 }

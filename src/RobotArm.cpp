@@ -1,38 +1,27 @@
 #include "RobotArm.h"
-#include <cstring>
 
-RobotArm::RobotArm() {
-    std::memset(jointAngles, 0, sizeof(jointAngles));
+RobotArm::RobotArm()
+    : solver_(joints_, links_)  // KinematicsSolverに参照を渡す（joints_とlinks_を共有）
+{}
+
+void RobotArm::addJoint(float limit_min, float limit_max, float theta_offset) {
+    joints_.emplace_back(theta_offset, limit_min, limit_max);
 }
 
-void RobotArm::setJointAngles(const double* angles) {
-    std::memcpy(jointAngles, angles, sizeof(jointAngles));
+void RobotArm::addLink(float a, float alpha, float d) {
+    links_.emplace_back(a, alpha, d);
 }
 
-void RobotArm::getJointAngles(double* outAngles) const {
-    std::memcpy(outAngles, jointAngles, sizeof(jointAngles));
+size_t RobotArm::getNumJoints() const {
+    return joints_.size();
 }
 
-Pose RobotArm::forwardKinematics() {
-    return fkSolver.solve(model, jointAngles);
+void RobotArm::computeIK(float target_x, float target_y, float target_z,
+                         const std::vector<float>& initial_guess) {
+    solver_.computeIK(target_x, target_y, target_z, initial_guess);
 }
 
-bool RobotArm::inverseKinematics(const Pose& targetPose) {
-    return ikSolver.solve(model, jointAngles, targetPose);
-}
-
-void RobotArm::setIKEpsilon(double eps) {
-    ikSolver.setEpsilon(eps);
-}
-
-void RobotArm::setIKMaxIterations(int maxIter) {
-    ikSolver.setMaxIterations(maxIter);
-}
-
-void RobotArm::setIKLearningRate(double lr) {
-    ikSolver.setLearningRate(lr);
-}
-
-ArmModel& RobotArm::getModel() {
-    return model;
+float RobotArm::getJointAngle(size_t index) const {
+    if (index >= joints_.size()) return 0.0f;  // 安全のため
+    return joints_[index].getCurrentValue();
 }

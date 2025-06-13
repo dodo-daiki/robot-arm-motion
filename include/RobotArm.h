@@ -1,33 +1,25 @@
 #pragma once
-
-#include "Pose.h"
-#include "ArmModel.h"
-#include "IKSolver.h"
-#include "FKSolver.h"
+#include <vector>
+#include "Joint.h"
+#include "Link.h"
+#include "KinematicsSolver.h"
 
 class RobotArm {
 public:
     RobotArm();
 
-    void setJointAngles(const double* angles);
-    void getJointAngles(double* outAngles) const;
+    void addJoint(float limit_min, float limit_max, float theta_offset);
+    void addLink(float a, float alpha, float d);
 
-    Pose forwardKinematics();
-    bool inverseKinematics(const Pose& targetPose);
+    size_t getNumJoints() const;
 
-    // IK params
-    void setIKEpsilon(double eps);
-    void setIKMaxIterations(int maxIter);
-    void setIKLearningRate(double lr);
+    void computeIK(float target_x, float target_y, float target_z,
+                   const std::vector<float>& initial_guess);
 
-    // Access to model
-    ArmModel& getModel();
+    float getJointAngle(size_t index) const;
 
 private:
-    static constexpr int NUM_JOINTS = 6;
-    double jointAngles[NUM_JOINTS];
-
-    ArmModel model;
-    IKSolver ikSolver;
-    FKSolver fkSolver;
+    std::vector<Joint> joints_;
+    std::vector<Link> links_;
+    KinematicsSolver solver_;
 };
